@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Electric Heater Room</title>
+    <link rel="stylesheet" href="styles/main.css">
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="/favicon.ico">
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#FF6B35">
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <picture class="logo">
+                <!-- WebP format for modern browsers (better compression) -->
+                <source 
+                    media="(max-width: 768px)" 
+                    srcset="assets/logos/EHRLogo-mobile-1x.webp 1x, 
+                            assets/logos/EHRLogo-mobile-2x.webp 2x, 
+                            assets/logos/EHRLogo-mobile-3x.webp 3x" 
+                    type="image/webp">
+                <source 
+                    media="(min-width: 769px)" 
+                    srcset="assets/logos/EHRLogo-desktop-1x.webp 1x, 
+                            assets/logos/EHRLogo-desktop-2x.webp 2x, 
+                            assets/logos/EHRLogo-desktop-3x.webp 3x" 
+                    type="image/webp">
+                <!-- PNG fallback for older browsers -->
+                <source 
+                    media="(max-width: 768px)" 
+                    srcset="assets/logos/EHRLogo-mobile-1x.png 1x, 
+                            assets/logos/EHRLogo-mobile-2x.png 2x, 
+                            assets/logos/EHRLogo-mobile-3x.png 3x" 
+                    type="image/png">
+                <source 
+                    media="(min-width: 769px)" 
+                    srcset="assets/logos/EHRLogo-desktop-1x.png 1x, 
+                            assets/logos/EHRLogo-desktop-2x.png 2x, 
+                            assets/logos/EHRLogo-desktop-3x.png 3x" 
+                    type="image/png">
+                <!-- Fallback for very old browsers -->
+                <img 
+                    src="assets/logos/EHRLogo-desktop-1x.png" 
+                    alt="Electric Heater Room" 
+                    class="logo"
+                    loading="eager"
+                    width="198" 
+                    height="60">
+            </picture>
+            <nav class="nav">
+                <button class="nav-button" data-section="live-streams" aria-label="Live Streams">Live Streams</button>
+                <button class="nav-button" data-section="audio-archives" aria-label="Audio Sets">Audio Sets</button>
+                <button class="nav-button" data-section="video-archives" aria-label="Video Sets">Video Sets</button>
+                <button class="nav-button" data-section="events" aria-label="Events">Events</button>
+                <a href="https://instagram.com/electricheaterroom" target="_blank" rel="noopener noreferrer" class="instagram-link" aria-label="Instagram">Instagram</a>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <!-- Audio Sets Section -->
+        <section id="audio-archives" class="section">
+            <h1 class="section-title">Audio Sets</h1>
+            <div class="archives-container" id="audio-archives-container">
+                <!-- Audio set items will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <!-- Video Sets Section -->
+        <section id="video-archives" class="section">
+            <h1 class="section-title">Video Sets</h1>
+            <div class="video-player-layout" id="video-player-layout">
+                <div class="video-main-player" id="video-main-player">
+                    <div class="video-player-container" id="video-player-container">
+                        <!-- Main video player will be loaded here -->
+                        <div class="video-placeholder">
+                            <p>Select a video from the playlist to start watching</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="video-playlist-wrapper" id="video-playlist-wrapper">
+                    <button class="video-playlist-toggle" id="video-playlist-toggle" aria-label="Toggle Playlist">
+                        <span class="playlist-toggle-icon">▶</span>
+                    </button>
+                    <div class="video-playlist" id="video-playlist">
+                        <!-- Video playlist items will be dynamically loaded here -->
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Events Section -->
+        <section id="events" class="section">
+            <h1 class="section-title">Events</h1>
+            <div class="calendar-container" id="calendar-container">
+                <!-- Calendar will be dynamically loaded here -->
+            </div>
+        </section>
+
+        <!-- Live Streams Section -->
+        <section id="live-streams" class="section active">
+        </section>
+
+        <div class="player-layout">
+            <div class="player-container">
+                <!-- Stream Tabs -->
+                <div class="stream-tabs">
+                    <button class="stream-tab active" data-stream="kick" id="kick-tab">Kick</button>
+                    <button class="stream-tab" data-stream="twitch" id="twitch-tab">Twitch</button>
+                    <button type="button" class="stream-tab-share" id="stream-share-button" aria-label="Share stream">🔗</button>
+                </div>
+                
+                <!-- Stream Players -->
+                <div class="stream-players">
+                    <div class="stream-player active" id="kick-player">
+                        <div class="embed-container" id="kick-embed">
+                            <iframe 
+                                src="https://player.kick.com/flukie" 
+                                height="720" 
+                                width="1280"
+                                frameborder="0" 
+                                scrolling="no" 
+                                allowfullscreen="true"
+                                title="Kick.com Live Stream">
+                            </iframe>
+                        </div>
+                    </div>
+                    <div class="stream-player" id="twitch-player">
+                        <div class="embed-container" id="twitch-embed"></div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Chat Container -->
+            <div class="chat-wrapper" id="chat-wrapper">
+                <button class="chat-toggle" id="chat-toggle" aria-label="Toggle Chat">
+                    <span class="chat-toggle-icon">▶</span>
+                </button>
+                <div class="chat-container" id="chat-container">
+                    <div class="chat-embed-container">
+                        <iframe 
+                            src=""
+                            class="chat-embed chat-twitch active"
+                            id="twitch-chat"
+                            frameborder="0"
+                            allow="clipboard-read; clipboard-write"
+                            title="Twitch Chat">
+                        </iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- External SDK Scripts -->
+    <script src="https://embed.twitch.tv/embed/v1.js"></script>
+    <script src="https://widget.mixcloud.com/media/js/widgetApi.js"></script>
+
+    <!-- Application Scripts -->
+    <script src="scripts/config.js" type="module"></script>
+    <script src="scripts/navigation.js" type="module"></script>
+    <script src="scripts/embeds.js" type="module"></script>
+    <script src="scripts/stream-controls.js" type="module"></script>
+    <script src="scripts/main.js" type="module"></script>
+</body>
+</html>
+

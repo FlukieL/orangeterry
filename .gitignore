@@ -1,0 +1,26 @@
+# VK API session files (may contain credentials)
+vk_config.v2.json
+vk_config*.json
+*.vk_config
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# Environment variables
+.env
+.env.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
