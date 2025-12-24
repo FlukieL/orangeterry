@@ -1,15 +1,6 @@
 {
   "events": [
     {
-      "id": 1,
-      "title": "Xmas Live Test DJ Set",
-      "date": "2025-12-18",
-      "time": "20:00",
-      "location": "Online",
-      "description": "Testing this website live prior to a proper set",
-      "type": "stream"
-    },
-    {
       "id": 2,
       "title": "NYE 2025-2026",
       "date": "2025-12-31",

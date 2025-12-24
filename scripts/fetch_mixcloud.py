@@ -490,34 +490,58 @@ def fetch_hearthis_tracks(username):
 def main():
     """Main function to fetch data from both platforms and generate JSON."""
     # Get usernames from command line or use defaults
-    mixcloud_username = sys.argv[1] if len(sys.argv) > 1 else "FlukieL"
-    hearthis_username = sys.argv[2] if len(sys.argv) > 2 else "flukie"
+    mixcloud_username = sys.argv[1] if len(sys.argv) > 1 else "Orangeterry"
+    hearthis_username = sys.argv[2] if len(sys.argv) > 2 else None
     
     all_archive_items = []
     
-    # Fetch Mixcloud data
-    print(f"\n=== Fetching Mixcloud profile: {mixcloud_username} ===")
-    user_data = fetch_mixcloud_user(mixcloud_username)
+    # Fetch all tracks from Orangeterry profile
+    print(f"\n=== Fetching Mixcloud profile: Orangeterry (all tracks) ===")
+    user_data = fetch_mixcloud_user("Orangeterry")
     if user_data:
-        print(f"User found: {user_data.get('name', mixcloud_username)}")
-        uploads = fetch_all_uploads(mixcloud_username)
+        print(f"User found: {user_data.get('name', 'Orangeterry')}")
+        uploads = fetch_all_uploads("Orangeterry")
         if uploads:
             mixcloud_items = [format_archive_item(upload) for upload in uploads]
             all_archive_items.extend(mixcloud_items)
-            print(f"Added {len(mixcloud_items)} Mixcloud items")
+            print(f"Added {len(mixcloud_items)} Mixcloud items from Orangeterry")
         else:
             print("No Mixcloud uploads found.")
     else:
         print("Failed to fetch Mixcloud user data.")
     
-    # Fetch hearthis.at data
-    print(f"\n=== Fetching hearthis.at profile: {hearthis_username} ===")
-    hearthis_tracks = fetch_hearthis_tracks(hearthis_username)
-    if hearthis_tracks:
-        all_archive_items.extend(hearthis_tracks)
-        print(f"Added {len(hearthis_tracks)} hearthis.at items")
+    # Fetch only "Orange Terry" sets from weekendradiocouk profile
+    print(f"\n=== Fetching Mixcloud profile: weekendradiocouk (Orange Terry sets only) ===")
+    user_data2 = fetch_mixcloud_user("weekendradiocouk")
+    if user_data2:
+        print(f"User found: {user_data2.get('name', 'weekendradiocouk')}")
+        uploads2 = fetch_all_uploads("weekendradiocouk")
+        if uploads2:
+            # Filter for only sets containing "Orange Terry" in the title (case-insensitive)
+            orange_terry_uploads = [
+                upload for upload in uploads2 
+                if "Orange Terry" in upload.get('name', '') or "orange terry" in upload.get('name', '').lower()
+            ]
+            if orange_terry_uploads:
+                mixcloud_items2 = [format_archive_item(upload) for upload in orange_terry_uploads]
+                all_archive_items.extend(mixcloud_items2)
+                print(f"Added {len(mixcloud_items2)} Orange Terry sets from weekendradiocouk")
+            else:
+                print("No Orange Terry sets found in weekendradiocouk profile.")
+        else:
+            print("No Mixcloud uploads found.")
     else:
-        print("No hearthis.at tracks found.")
+        print("Failed to fetch Mixcloud user data.")
+    
+    # Fetch hearthis.at data if username provided
+    if hearthis_username:
+        print(f"\n=== Fetching hearthis.at profile: {hearthis_username} ===")
+        hearthis_tracks = fetch_hearthis_tracks(hearthis_username)
+        if hearthis_tracks:
+            all_archive_items.extend(hearthis_tracks)
+            print(f"Added {len(hearthis_tracks)} hearthis.at items")
+        else:
+            print("No hearthis.at tracks found.")
     
     if not all_archive_items:
         print("\nNo audio items found from either platform.")
@@ -529,6 +553,7 @@ def main():
     
     existing_data = {}
     existing_hearthis_tracks = []
+    existing_other_mixcloud = []
     if output_path.exists():
         try:
             with open(output_path, 'r', encoding='utf-8') as f:
@@ -536,6 +561,13 @@ def main():
                 # Preserve existing hearthis tracks (they may be manually added since they load dynamically)
                 if "audio" in existing_data:
                     existing_hearthis_tracks = [item for item in existing_data["audio"] if item.get("platform") == "hearthis"]
+                    # Preserve Mixcloud items from other profiles (not Orangeterry or weekendradiocouk)
+                    existing_other_mixcloud = [
+                        item for item in existing_data["audio"] 
+                        if item.get("platform") == "mixcloud" 
+                        and not item.get("url", "").startswith("https://www.mixcloud.com/Orangeterry/")
+                        and not item.get("url", "").startswith("https://www.mixcloud.com/weekendradiocouk/")
+                    ]
         except Exception as e:
             print(f"Warning: Could not read existing JSON file: {e}")
     
@@ -547,15 +579,15 @@ def main():
     # Merge hearthis tracks: keep manually added ones, add newly scraped ones
     existing_hearthis_urls = {track['url'] for track in existing_hearthis_tracks}
     new_hearthis_tracks = [item for item in all_archive_items if item.get("platform") == "hearthis"]
-    other_audio_items = [item for item in all_archive_items if item.get("platform") != "hearthis"]
+    new_mixcloud_items = [item for item in all_archive_items if item.get("platform") == "mixcloud"]
     
     # Add new hearthis tracks that aren't already in the list
     for track in new_hearthis_tracks:
         if track['url'] not in existing_hearthis_urls:
             existing_hearthis_tracks.append(track)
     
-    # Combine all audio items
-    all_audio_items = other_audio_items + existing_hearthis_tracks
+    # Combine all audio items: new Mixcloud items + existing other Mixcloud + hearthis tracks
+    all_audio_items = new_mixcloud_items + existing_other_mixcloud + existing_hearthis_tracks
     
     # Create output structure, preserving existing video entries and manually added hearthis tracks
     output = {
@@ -569,7 +601,17 @@ def main():
     
     print(f"\n=== Successfully generated {output_path} ===")
     print(f"Total audio items: {len(all_audio_items)}")
-    print(f"  - Mixcloud: {len([i for i in all_audio_items if i['platform'] == 'mixcloud'])}")
+    mixcloud_items = [i for i in all_audio_items if i['platform'] == 'mixcloud']
+    print(f"  - Mixcloud: {len(mixcloud_items)}")
+    orangeterry_count = len([i for i in mixcloud_items if i.get("url", "").startswith("https://www.mixcloud.com/Orangeterry/")])
+    weekendradio_count = len([i for i in mixcloud_items if i.get("url", "").startswith("https://www.mixcloud.com/weekendradiocouk/")])
+    other_mixcloud_count = len(mixcloud_items) - orangeterry_count - weekendradio_count
+    if orangeterry_count > 0:
+        print(f"    - Orangeterry: {orangeterry_count}")
+    if weekendradio_count > 0:
+        print(f"    - weekendradiocouk (Orange Terry sets): {weekendradio_count}")
+    if other_mixcloud_count > 0:
+        print(f"    - Other profiles: {other_mixcloud_count}")
     print(f"  - hearthis.at: {len([i for i in all_audio_items if i['platform'] == 'hearthis'])}")
     if existing_hearthis_tracks and not new_hearthis_tracks:
         print(f"  Note: Preserved {len(existing_hearthis_tracks)} existing hearthis.at track(s)")

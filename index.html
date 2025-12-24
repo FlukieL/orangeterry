@@ -3,7 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Electric Heater Room</title>
+    <title>Orange Terry</title>
+    <!-- Google Fonts - Montserrat -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="styles/main.css">
     
     <!-- Favicons -->
@@ -19,81 +23,26 @@
 <body>
     <header class="header">
         <div class="header-content">
-            <picture class="logo">
-                <!-- WebP format for modern browsers (better compression) -->
-                <source 
-                    media="(max-width: 768px)" 
-                    srcset="assets/logos/EHRLogo-mobile-1x.webp 1x, 
-                            assets/logos/EHRLogo-mobile-2x.webp 2x, 
-                            assets/logos/EHRLogo-mobile-3x.webp 3x" 
-                    type="image/webp">
-                <source 
-                    media="(min-width: 769px)" 
-                    srcset="assets/logos/EHRLogo-desktop-1x.webp 1x, 
-                            assets/logos/EHRLogo-desktop-2x.webp 2x, 
-                            assets/logos/EHRLogo-desktop-3x.webp 3x" 
-                    type="image/webp">
-                <!-- PNG fallback for older browsers -->
-                <source 
-                    media="(max-width: 768px)" 
-                    srcset="assets/logos/EHRLogo-mobile-1x.png 1x, 
-                            assets/logos/EHRLogo-mobile-2x.png 2x, 
-                            assets/logos/EHRLogo-mobile-3x.png 3x" 
-                    type="image/png">
-                <source 
-                    media="(min-width: 769px)" 
-                    srcset="assets/logos/EHRLogo-desktop-1x.png 1x, 
-                            assets/logos/EHRLogo-desktop-2x.png 2x, 
-                            assets/logos/EHRLogo-desktop-3x.png 3x" 
-                    type="image/png">
-                <!-- Fallback for very old browsers -->
-                <img 
-                    src="assets/logos/EHRLogo-desktop-1x.png" 
-                    alt="Electric Heater Room" 
-                    class="logo"
-                    loading="eager"
-                    width="198" 
-                    height="60">
-            </picture>
+            <img 
+                src="OrangeTerryLogo.jpg" 
+                alt="Orange Terry" 
+                class="logo"
+                loading="eager">
             <nav class="nav">
-                <button class="nav-button" data-section="live-streams" aria-label="Live Streams">Live Streams</button>
-                <button class="nav-button" data-section="audio-archives" aria-label="Audio Sets">Audio Sets</button>
-                <button class="nav-button" data-section="video-archives" aria-label="Video Sets">Video Sets</button>
+                <button class="nav-button" data-section="audio-archives" aria-label="Sets">Sets</button>
                 <button class="nav-button" data-section="events" aria-label="Events">Events</button>
-                <a href="https://instagram.com/electricheaterroom" target="_blank" rel="noopener noreferrer" class="instagram-link" aria-label="Instagram">Instagram</a>
+                <a href="https://weekendradio.co.uk/" target="_blank" rel="noopener noreferrer" class="nav-link" aria-label="WeekendRadio.co.uk">WeekendRadio.co.uk</a>
+                <a href="https://www.instagram.com/belf_2704/" target="_blank" rel="noopener noreferrer" class="instagram-link" aria-label="Instagram">Instagram</a>
             </nav>
         </div>
     </header>
 
     <main class="main-content">
-        <!-- Audio Sets Section -->
+        <!-- Sets Section -->
         <section id="audio-archives" class="section">
-            <h1 class="section-title">Audio Sets</h1>
+            <h1 class="section-title">Sets</h1>
             <div class="archives-container" id="audio-archives-container">
-                <!-- Audio set items will be dynamically loaded here -->
-            </div>
-        </section>
-
-        <!-- Video Sets Section -->
-        <section id="video-archives" class="section">
-            <h1 class="section-title">Video Sets</h1>
-            <div class="video-player-layout" id="video-player-layout">
-                <div class="video-main-player" id="video-main-player">
-                    <div class="video-player-container" id="video-player-container">
-                        <!-- Main video player will be loaded here -->
-                        <div class="video-placeholder">
-                            <p>Select a video from the playlist to start watching</p>
-                        </div>
-                    </div>
-                </div>
-                <div class="video-playlist-wrapper" id="video-playlist-wrapper">
-                    <button class="video-playlist-toggle" id="video-playlist-toggle" aria-label="Toggle Playlist">
-                        <span class="playlist-toggle-icon">▶</span>
-                    </button>
-                    <div class="video-playlist" id="video-playlist">
-                        <!-- Video playlist items will be dynamically loaded here -->
-                    </div>
-                </div>
+                <!-- Set items will be dynamically loaded here -->
             </div>
         </section>
 
@@ -104,60 +53,6 @@
                 <!-- Calendar will be dynamically loaded here -->
             </div>
         </section>
-
-        <!-- Live Streams Section -->
-        <section id="live-streams" class="section active">
-        </section>
-
-        <div class="player-layout">
-            <div class="player-container">
-                <!-- Stream Tabs -->
-                <div class="stream-tabs">
-                    <button class="stream-tab active" data-stream="kick" id="kick-tab">Kick</button>
-                    <button class="stream-tab" data-stream="twitch" id="twitch-tab">Twitch</button>
-                    <button type="button" class="stream-tab-share" id="stream-share-button" aria-label="Share stream">🔗</button>
-                </div>
-                
-                <!-- Stream Players -->
-                <div class="stream-players">
-                    <div class="stream-player active" id="kick-player">
-                        <div class="embed-container" id="kick-embed">
-                            <iframe 
-                                src="https://player.kick.com/flukie" 
-                                height="720" 
-                                width="1280"
-                                frameborder="0" 
-                                scrolling="no" 
-                                allowfullscreen="true"
-                                title="Kick.com Live Stream">
-                            </iframe>
-                        </div>
-                    </div>
-                    <div class="stream-player" id="twitch-player">
-                        <div class="embed-container" id="twitch-embed"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <!-- Chat Container -->
-            <div class="chat-wrapper" id="chat-wrapper">
-                <button class="chat-toggle" id="chat-toggle" aria-label="Toggle Chat">
-                    <span class="chat-toggle-icon">▶</span>
-                </button>
-                <div class="chat-container" id="chat-container">
-                    <div class="chat-embed-container">
-                        <iframe 
-                            src=""
-                            class="chat-embed chat-twitch active"
-                            id="twitch-chat"
-                            frameborder="0"
-                            allow="clipboard-read; clipboard-write"
-                            title="Twitch Chat">
-                        </iframe>
-                    </div>
-                </div>
-            </div>
-        </div>
     </main>
 
     <!-- External SDK Scripts -->

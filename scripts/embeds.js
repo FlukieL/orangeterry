@@ -228,14 +228,26 @@ export function createIframeEmbed(embedUrl, containerId, options = {}) {
  * const item = { platform: 'mixcloud', title: 'My Mix', url: '...', embedUrl: '...', key: '...' };
  * createAudioArchiveItem(item, document.getElementById('audio-archives-container'));
  */
-export function createAudioArchiveItem(archiveItem, container) {
+/**
+ * Creates the structure for an audio archive item without loading the embed
+ * The embed will be loaded lazily when the item comes into view
+ * 
+ * @param {Object} archiveItem - The archive item data
+ * @param {HTMLElement} container - The container to append the item to
+ * @returns {HTMLElement} The created item element
+ */
+function createAudioArchiveItemPlaceholder(archiveItem) {
     const itemDiv = document.createElement('div');
-    itemDiv.className = 'archive-item';
+    itemDiv.className = 'archive-item archive-item-placeholder';
     if (archiveItem.key) {
         itemDiv.dataset.audioKey = archiveItem.key;
     }
+    
+    // Store the archive item data for lazy loading
+    itemDiv.dataset.archiveData = JSON.stringify(archiveItem);
+    itemDiv.dataset.embedLoaded = 'false';
 
-    // Create header with title and share button
+    // Create header with title only
     const headerDiv = document.createElement('div');
     headerDiv.className = 'archive-item-header';
     
@@ -243,25 +255,13 @@ export function createAudioArchiveItem(archiveItem, container) {
     titleDiv.className = 'archive-title';
     titleDiv.textContent = archiveItem.title;
     headerDiv.appendChild(titleDiv);
-
-    // Add share button
-    if (archiveItem.key) {
-        const shareButton = document.createElement('button');
-        shareButton.type = 'button';
-        shareButton.className = 'archive-item-share';
-        shareButton.setAttribute('aria-label', `Share ${archiveItem.title}`);
-        shareButton.innerHTML = '🔗';
-        shareButton.addEventListener('click', (e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            shareAudioSet(archiveItem);
-        });
-        headerDiv.appendChild(shareButton);
-    }
     
     itemDiv.appendChild(headerDiv);
 
-    // Add date if available
+    // Add date and share button together
+    const dateShareContainer = document.createElement('div');
+    dateShareContainer.className = 'archive-date-share-container';
+    
     if (archiveItem.created_time) {
         const dateDiv = document.createElement('div');
         dateDiv.className = 'archive-date';
@@ -273,14 +273,35 @@ export function createAudioArchiveItem(archiveItem, container) {
             year: 'numeric'
         });
         dateDiv.textContent = formattedDate;
-        itemDiv.appendChild(dateDiv);
+        dateShareContainer.appendChild(dateDiv);
     }
 
-    const embedDiv = document.createElement('div');
-    embedDiv.className = 'archive-embed';
+    // Add share button alongside date
+    if (archiveItem.key) {
+        const shareButton = document.createElement('button');
+        shareButton.type = 'button';
+        shareButton.className = 'archive-item-share';
+        shareButton.setAttribute('aria-label', `Share ${archiveItem.title}`);
+        shareButton.innerHTML = '🔗';
+        shareButton.addEventListener('click', (e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            shareAudioSet(archiveItem);
+        });
+        dateShareContainer.appendChild(shareButton);
+    }
     
-    const uniqueId = `audio-${archiveItem.platform}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    embedDiv.id = uniqueId;
+    itemDiv.appendChild(dateShareContainer);
+
+    // Create placeholder for embed (will be loaded lazily)
+    const embedDiv = document.createElement('div');
+    embedDiv.className = 'archive-embed archive-embed-placeholder';
+    embedDiv.style.minHeight = '120px';
+    embedDiv.style.display = 'flex';
+    embedDiv.style.alignItems = 'center';
+    embedDiv.style.justifyContent = 'center';
+    embedDiv.style.color = '#999';
+    embedDiv.textContent = 'Loading...';
     itemDiv.appendChild(embedDiv);
 
     // Make item clickable to update URL
@@ -295,22 +316,93 @@ export function createAudioArchiveItem(archiveItem, container) {
         });
     }
 
-    container.appendChild(itemDiv);
-
     // Set up scroll animation observer for this item
     setupArchiveItemAnimation(itemDiv);
+    
+    return itemDiv;
+}
 
-    // Initialise the appropriate embed based on platform
-    if (archiveItem.platform === 'mixcloud') {
-        initMixcloudWidget(archiveItem.url, uniqueId, uniqueId);
-    } else if (archiveItem.platform === 'hearthis') {
-        createIframeEmbed(archiveItem.embedUrl, uniqueId, {
-            height: '150',
-            title: archiveItem.title
-        });
-    } else {
-        console.warn(`Unknown audio platform: ${archiveItem.platform}`);
+/**
+ * Loads the embed for an archive item when it comes into view
+ * 
+ * @param {HTMLElement} itemDiv - The archive item element
+ * @private
+ */
+function loadArchiveItemEmbed(itemDiv) {
+    if (itemDiv.dataset.embedLoaded === 'true') {
+        return; // Already loaded
     }
+    
+    const archiveDataStr = itemDiv.dataset.archiveData;
+    if (!archiveDataStr) {
+        return;
+    }
+    
+    try {
+        const archiveItem = JSON.parse(archiveDataStr);
+        const embedDiv = itemDiv.querySelector('.archive-embed');
+        if (!embedDiv) {
+            return;
+        }
+        
+        // Clear placeholder
+        embedDiv.innerHTML = '';
+        embedDiv.className = 'archive-embed';
+        embedDiv.style.minHeight = '';
+        embedDiv.style.display = '';
+        embedDiv.style.alignItems = '';
+        embedDiv.style.justifyContent = '';
+        embedDiv.style.color = '';
+        
+        const uniqueId = `audio-${archiveItem.platform}-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        embedDiv.id = uniqueId;
+        
+        // Initialise the appropriate embed based on platform
+        if (archiveItem.platform === 'mixcloud') {
+            initMixcloudWidget(archiveItem.url, uniqueId, uniqueId);
+        } else if (archiveItem.platform === 'hearthis') {
+            createIframeEmbed(archiveItem.embedUrl, uniqueId, {
+                height: '150',
+                title: archiveItem.title
+            });
+        } else {
+            console.warn(`Unknown audio platform: ${archiveItem.platform}`);
+        }
+        
+        itemDiv.dataset.embedLoaded = 'true';
+        itemDiv.classList.remove('archive-item-placeholder');
+    } catch (error) {
+        console.error('Error loading archive item embed:', error);
+    }
+}
+
+/**
+ * Creates an audio archive item (legacy function, now uses placeholder + lazy loading)
+ * 
+ * @param {Object} archiveItem - The archive item data
+ * @param {HTMLElement} container - The container to append the item to
+ */
+export function createAudioArchiveItem(archiveItem, container) {
+    const itemDiv = createAudioArchiveItemPlaceholder(archiveItem);
+    container.appendChild(itemDiv);
+    
+    // Set up IntersectionObserver for lazy loading the embed
+    const embedObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                loadArchiveItemEmbed(entry.target);
+            }
+        });
+    }, {
+        root: null,
+        rootMargin: '200px', // Start loading 200px before item comes into view
+        threshold: 0.01
+    });
+    
+    embedObserver.observe(itemDiv);
+    
+    // Store observer reference on the element to prevent garbage collection
+    itemDiv._embedObserver = embedObserver;
 }
 
 /**
@@ -456,6 +548,153 @@ export function initLiveStreams(kickChannel, twitchChannel) {
  * const archives = await getAudioArchives();
  * loadAudioArchives(archives);
  */
+// Store archive data globally for reloading
+let globalArchivesByYear = null;
+
+/**
+ * Unloads the embed from an individual archive item
+ * 
+ * @param {HTMLElement} itemDiv - The archive item element
+ * @private
+ */
+function unloadArchiveItemEmbed(itemDiv) {
+    if (itemDiv.dataset.embedLoaded !== 'true') {
+        return; // Not loaded, nothing to unload
+    }
+    
+    // Clean up Mixcloud widgets
+    const embedDiv = itemDiv.querySelector('.archive-embed');
+    if (embedDiv && embedDiv.id) {
+        const widgetId = embedDiv.id;
+        
+        // Try to find and clean up the widget
+        if (mixcloudWidgets.has(widgetId)) {
+            try {
+                const widget = mixcloudWidgets.get(widgetId);
+                if (widget && typeof widget.pause === 'function') {
+                    widget.pause();
+                }
+                mixcloudWidgets.delete(widgetId);
+            } catch (error) {
+                console.warn(`Error cleaning up Mixcloud widget "${widgetId}":`, error);
+            }
+        }
+        
+        // Also check for iframe-based Mixcloud widgets
+        const iframe = embedDiv.querySelector('iframe');
+        if (iframe && iframe.id && iframe.id.startsWith('mixcloud-iframe-')) {
+            const iframeWidgetId = iframe.id.replace('mixcloud-iframe-', '');
+            if (mixcloudWidgets.has(iframeWidgetId)) {
+                try {
+                    const widget = mixcloudWidgets.get(iframeWidgetId);
+                    if (widget && typeof widget.pause === 'function') {
+                        widget.pause();
+                    }
+                    mixcloudWidgets.delete(iframeWidgetId);
+                } catch (error) {
+                    console.warn(`Error cleaning up Mixcloud widget "${iframeWidgetId}":`, error);
+                }
+            }
+        }
+    }
+    
+    // Clean up all iframes (Mixcloud, hearthis, etc.)
+    const iframes = itemDiv.querySelectorAll('iframe');
+    iframes.forEach(iframe => {
+        const currentSrc = iframe.src;
+        if (currentSrc && currentSrc !== 'about:blank' && currentSrc !== window.location.href) {
+            // Store original src in data attribute (only if not already stored)
+            if (!iframe.getAttribute('data-original-src')) {
+                iframe.setAttribute('data-original-src', currentSrc);
+            }
+            // Clear the src to stop playback and free memory
+            iframe.src = 'about:blank';
+        }
+    });
+    
+    // Reset embed div to placeholder state
+    if (embedDiv) {
+        embedDiv.innerHTML = '';
+        embedDiv.className = 'archive-embed archive-embed-placeholder';
+        embedDiv.style.minHeight = '120px';
+        embedDiv.style.display = 'flex';
+        embedDiv.style.alignItems = 'center';
+        embedDiv.style.justifyContent = 'center';
+        embedDiv.style.color = '#999';
+        embedDiv.textContent = 'Loading...';
+        embedDiv.removeAttribute('id');
+    }
+    
+    itemDiv.dataset.embedLoaded = 'false';
+    itemDiv.classList.add('archive-item-placeholder');
+}
+
+/**
+ * Unloads archive items from a year section to free memory
+ * 
+ * @param {HTMLElement} yearContent - The year content container
+ * @private
+ */
+function unloadYearContent(yearContent) {
+    if (!yearContent) return;
+    
+    const archiveItems = yearContent.querySelectorAll('.archive-item');
+    
+    // Unload embeds from all items
+    archiveItems.forEach(item => {
+        unloadArchiveItemEmbed(item);
+    });
+    
+    // Clear the content
+    yearContent.innerHTML = '';
+    yearContent.dataset.loaded = 'false';
+}
+
+/**
+ * Loads archive items for a year section (creates placeholders, embeds load lazily)
+ * 
+ * @param {HTMLElement} yearSection - The year section element
+ * @param {HTMLElement} yearContent - The year content container
+ * @param {string} year - The year value
+ * @private
+ */
+function loadYearContent(yearSection, yearContent, year) {
+    if (!globalArchivesByYear) return;
+    
+    const loaded = yearContent.dataset.loaded === 'true';
+    if (loaded) return; // Already loaded
+    
+    const yearArchives = globalArchivesByYear.get(year === 'Unknown' ? 'Unknown' : parseInt(year));
+    if (!yearArchives) return;
+    
+    // Create placeholders for all items in this year (embeds will load lazily)
+    yearArchives.forEach((item) => {
+        const itemDiv = createAudioArchiveItemPlaceholder(item);
+        yearContent.appendChild(itemDiv);
+        
+        // Set up IntersectionObserver for lazy loading the embed
+        const embedObserver = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    loadArchiveItemEmbed(entry.target);
+                }
+            });
+        }, {
+            root: null,
+            rootMargin: '200px', // Start loading 200px before item comes into view
+            threshold: 0.01
+        });
+        
+        embedObserver.observe(itemDiv);
+        
+        // Store observer reference on the element to prevent garbage collection
+        itemDiv._embedObserver = embedObserver;
+    });
+    
+    yearContent.dataset.loaded = 'true';
+    yearSection.classList.add('loaded');
+}
+
 export function loadAudioArchives(audioArchives) {
     const container = document.getElementById('audio-archives-container');
     
@@ -479,21 +718,21 @@ export function loadAudioArchives(audioArchives) {
         return dateB - dateA; // Descending order (newest first)
     });
 
-    // Group archives by year
-    const archivesByYear = new Map();
+    // Group archives by year and store globally for reloading
+    globalArchivesByYear = new Map();
     sortedArchives.forEach(item => {
         const year = item.created_time 
             ? new Date(item.created_time).getFullYear() 
             : 'Unknown';
         
-        if (!archivesByYear.has(year)) {
-            archivesByYear.set(year, []);
+        if (!globalArchivesByYear.has(year)) {
+            globalArchivesByYear.set(year, []);
         }
-        archivesByYear.get(year).push(item);
+        globalArchivesByYear.get(year).push(item);
     });
 
     // Create year sections
-    const years = Array.from(archivesByYear.keys()).sort((a, b) => {
+    const years = Array.from(globalArchivesByYear.keys()).sort((a, b) => {
         if (a === 'Unknown') return 1;
         if (b === 'Unknown') return -1;
         return b - a; // Descending order (newest first)
@@ -518,57 +757,74 @@ export function loadAudioArchives(audioArchives) {
         container.appendChild(yearSection);
     });
 
-    // Set up Intersection Observer for lazy loading
-    const observerOptions = {
+    // Set up Intersection Observer for lazy loading and unloading
+    const loadObserverOptions = {
         root: null,
-        rootMargin: '200px', // Start loading 200px before the section comes into view
-        threshold: 0.1
+        rootMargin: '300px', // Start loading 300px before the section comes into view
+        threshold: 0.01
     };
 
-    const observer = new IntersectionObserver((entries) => {
+    // Calculate viewport height for unloading threshold (2 viewport heights)
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight;
+    const unloadDistance = viewportHeight * 2;
+    
+    const unloadObserverOptions = {
+        root: null,
+        rootMargin: `-${unloadDistance}px`, // Unload when more than 2 viewport heights away
+        threshold: 0
+    };
+
+    // Observer for loading content
+    const loadObserver = new IntersectionObserver((entries) => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 const yearSection = entry.target;
                 const yearContent = yearSection.querySelector('.audio-year-content');
                 const year = yearSection.dataset.year;
+                
+                loadYearContent(yearSection, yearContent, year);
+            }
+        });
+    }, loadObserverOptions);
+
+    // Observer for unloading content (when far from viewport)
+    const unloadObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) {
+                const yearSection = entry.target;
+                const yearContent = yearSection.querySelector('.audio-year-content');
                 const loaded = yearContent.dataset.loaded === 'true';
-
-                if (!loaded && archivesByYear.has(parseInt(year)) || year === 'Unknown') {
-                    // Load content for this year
-                    const yearArchives = archivesByYear.get(year === 'Unknown' ? 'Unknown' : parseInt(year));
+                
+                // Only unload if it's loaded and far from viewport
+                if (loaded) {
+                    // Check if this is the currently highlighted item's year
+                    const highlightedItem = document.querySelector('.archive-item.highlighted');
+                    const shouldKeepLoaded = highlightedItem && 
+                        highlightedItem.closest('.audio-year-section') === yearSection;
                     
-                    yearArchives.forEach((item, index) => {
-                        setTimeout(() => {
-                            createAudioArchiveItem(item, yearContent);
-                        }, index * 50);
-                    });
-
-                    yearContent.dataset.loaded = 'true';
-                    yearSection.classList.add('loaded');
+                    if (!shouldKeepLoaded) {
+                        unloadYearContent(yearContent);
+                        yearSection.classList.remove('loaded');
+                    }
                 }
             }
         });
-    }, observerOptions);
+    }, unloadObserverOptions);
 
-    // Observe all year sections
+    // Observe all year sections for both loading and unloading
     const yearSections = container.querySelectorAll('.audio-year-section');
-    yearSections.forEach(section => observer.observe(section));
+    yearSections.forEach(section => {
+        loadObserver.observe(section);
+        unloadObserver.observe(section);
+    });
 
     // Load first year immediately
     if (yearSections.length > 0) {
         const firstSection = yearSections[0];
         const firstYearContent = firstSection.querySelector('.audio-year-content');
         const firstYear = firstSection.dataset.year;
-        const firstYearArchives = archivesByYear.get(firstYear === 'Unknown' ? 'Unknown' : parseInt(firstYear));
         
-        firstYearArchives.forEach((item, index) => {
-            setTimeout(() => {
-                createAudioArchiveItem(item, firstYearContent);
-            }, index * 50);
-        });
-        
-        firstYearContent.dataset.loaded = 'true';
-        firstSection.classList.add('loaded');
+        loadYearContent(firstSection, firstYearContent, firstYear);
     }
 
     // Check URL for audio parameter and scroll to that set
@@ -628,24 +884,56 @@ function highlightAudioSet(audioKey) {
  * @param {string} audioKey - The key of the audio set to scroll to
  */
 function scrollToAudioSet(audioKey) {
-    const item = document.querySelector(`[data-audio-key="${audioKey}"]`);
-    if (item) {
-        // Ensure the year section is loaded
-        const yearSection = item.closest('.audio-year-section');
+    // First, find which year this item belongs to by searching through globalArchivesByYear
+    let targetYear = null;
+    let targetItem = null;
+    
+    if (globalArchivesByYear) {
+        for (const [year, items] of globalArchivesByYear.entries()) {
+            const foundItem = items.find(item => item.key === audioKey);
+            if (foundItem) {
+                targetYear = year;
+                targetItem = foundItem;
+                break;
+            }
+        }
+    }
+    
+    if (targetYear !== null) {
+        // Find the year section
+        const yearSection = document.querySelector(`[data-year="${targetYear}"]`);
         if (yearSection) {
             const yearContent = yearSection.querySelector('.audio-year-content');
             if (yearContent && yearContent.dataset.loaded === 'false') {
                 // Force load this year section
-                const year = yearSection.dataset.year;
-                // This will be handled by the observer, but we can trigger it manually
-                yearSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                loadYearContent(yearSection, yearContent, targetYear);
             }
+            
+            // Scroll to the year section first
+            yearSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            
+            // Wait for content to load, then scroll to item
+            setTimeout(() => {
+                highlightAudioSet(audioKey);
+            }, 500);
         }
-        
-        // Wait a bit for content to load, then scroll to item
-        setTimeout(() => {
-            highlightAudioSet(audioKey);
-        }, 300);
+    } else {
+        // Fallback: try to find existing item
+        const item = document.querySelector(`[data-audio-key="${audioKey}"]`);
+        if (item) {
+            const yearSection = item.closest('.audio-year-section');
+            if (yearSection) {
+                const yearContent = yearSection.querySelector('.audio-year-content');
+                if (yearContent && yearContent.dataset.loaded === 'false') {
+                    const year = yearSection.dataset.year;
+                    loadYearContent(yearSection, yearContent, year);
+                }
+            }
+            
+            setTimeout(() => {
+                highlightAudioSet(audioKey);
+            }, 300);
+        }
     }
 }
 

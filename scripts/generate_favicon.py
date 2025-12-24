@@ -85,7 +85,7 @@ def main():
     """Main function."""
     script_dir = Path(__file__).parent
     project_root = script_dir.parent
-    logo_path = project_root / "EHRHeater.png"
+    logo_path = project_root / "OrangeTerryOrangeOnly.jpg"
     output_dir = project_root
     
     generate_favicon(logo_path, output_dir)

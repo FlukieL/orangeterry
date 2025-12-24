@@ -1,7 +1,7 @@
 {
-  "name": "Electric Heater Room",
-  "short_name": "EHR",
-  "description": "Electric Heater Room - Live streams, audio sets, video sets, and events",
+  "name": "Orange Terry",
+  "short_name": "OT",
+  "description": "Orange Terry - Live streams, audio sets, video sets, and events",
   "start_url": "/",
   "display": "browser",
   "background_color": "#000000",

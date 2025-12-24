@@ -92,7 +92,7 @@ function generateGoogleCalendarUrl(event) {
     const end = formatGoogleDate(endDate);
     
     // Build event details with website link
-    const websiteUrl = 'https://ehr.lukeharper.co.uk';
+    const websiteUrl = 'https://flukiel.github.io/orangeterry';
     let details = event.description || '';
     if (details) {
         details += '\n\n';
@@ -179,7 +179,8 @@ export function renderCalendar(events, container) {
             <div class="calendar-day-number">${dateInfo.day}</div>
             <div class="calendar-day-info">
                 <div class="calendar-day-name">${dateInfo.dayName}</div>
-                <div class="calendar-day-month">${dateInfo.month} ${dateInfo.year}</div>
+                <div class="calendar-day-month">${dateInfo.month}</div>
+                <div class="calendar-day-year">${dateInfo.year}</div>
             </div>
         `;
         dayCard.appendChild(dateHeader);
@@ -193,6 +194,15 @@ export function renderCalendar(events, container) {
             eventCard.className = `calendar-event calendar-event-${event.type || 'default'}`;
             
             const googleCalendarUrl = generateGoogleCalendarUrl(event);
+            
+            // Make the event card clickable
+            eventCard.addEventListener('click', (e) => {
+                // Don't navigate if clicking the calendar button
+                if (!e.target.closest('.event-calendar-button')) {
+                    window.open('https://flukiel.github.io/orangeterry', '_blank', 'noopener,noreferrer');
+                }
+            });
+            eventCard.style.cursor = 'pointer';
             
             eventCard.innerHTML = `
                 <div class="event-time">${event.time || 'All Day'}</div>
