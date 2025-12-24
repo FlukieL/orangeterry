@@ -50,6 +50,17 @@ export function initNavigation() {
     if (initialSection) {
         activeSection = initialSection.id;
         updateActiveButton(activeSection);
+    } else {
+        // Default to audio-archives (Sets) if no section is active and no hash is present
+        const hash = window.location.hash.slice(1);
+        if (!hash) {
+            activeSection = 'audio-archives';
+            const audioArchivesSection = document.getElementById('audio-archives');
+            if (audioArchivesSection) {
+                audioArchivesSection.classList.add('active');
+                updateActiveButton('audio-archives');
+            }
+        }
     }
 
     // Add click event listeners to navigation buttons
