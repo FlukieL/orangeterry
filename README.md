@@ -1,22 +1,14 @@
-# Electric Heater Room
+# Orange Terry
 
-A modern, animated website for streaming live DJ sets and managing audio/video archives. Features theatre-mode streaming, integrated chat, and an events calendar.
+A modern website for showcasing DJ sets and managing an events calendar. Features audio archives from Mixcloud and an interactive events calendar.
 
 ## Features
 
-### Live Streaming
-- **Dual Platform Support**: Switch between Kick and Twitch streams with tab navigation
-- **Theatre Mode**: Full-screen player layout similar to Twitch.com
-- **Integrated Chat**: Platform-specific chat panels that switch automatically
-  - Kick chat: `https://kick.com/popout/flukie/chat`
-  - Twitch chat: `https://www.twitch.tv/embed/flukie/chat`
-- **Retractable Chat**: Collapsible chat sidebar with smooth animations
-
-### Audio & Video Sets
-- **Audio Sets**: Browse and play audio archives from Mixcloud and hearthis.at
-- **Video Sets**: View video archives from VK Video
+### Audio Sets
+- **Audio Archives**: Browse and play audio sets from Mixcloud
 - **JSON-Based Configuration**: Easy content management via JSON files
 - **Dynamic Loading**: Content loaded dynamically from configuration files
+- **Embedded Players**: Play sets directly in the browser using Mixcloud's widget API
 
 ### Events Calendar
 - **Calendar View**: Visual calendar displaying upcoming events
@@ -24,8 +16,8 @@ A modern, animated website for streaming live DJ sets and managing audio/video a
 - **JSON Storage**: Events stored in `data/events.json` for easy updates
 
 ### Interactive Logo
-- **Random Animations**: 17 different non-spinning animations
-- **Auto-Play**: Animation on page load and every 69 seconds
+- **Random Animations**: Multiple different animations
+- **Auto-Play**: Animation on page load and at regular intervals
 - **Click to Animate**: Click the logo to trigger a random animation
 
 ### Design
@@ -34,40 +26,42 @@ A modern, animated website for streaming live DJ sets and managing audio/video a
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
 - **Modern UI**: Clean, minimalist interface with hover effects
 
+### External Links
+- **WeekendRadio.co.uk**: Link to Weekend Radio website
+- **Instagram**: Link to Instagram profile
+
 ## Project Structure
 
 ```
-ehr/
+orangeterry/
 ├── assets/
-│   └── EHRLogo.png          # Logo image
+│   ├── EHRLogo.png          # Legacy logo image
+│   └── logos/                # Optimised logo variants
 ├── data/
-│   ├── archives.json        # Audio and video sets configuration
-│   └── events.json          # Events calendar data
+│   ├── archives.json         # Audio sets configuration
+│   └── events.json           # Events calendar data
 ├── scripts/
-│   ├── chat-init.js         # Chat embed initialisation
-│   ├── config.js            # Configuration loader
-│   ├── embeds.js            # Stream and archive embed management
-│   ├── events.js            # Events calendar functionality
-│   ├── fetch_mixcloud.py    # Python script to fetch Mixcloud/hearthis.at content
-│   ├── fetch_vk_videos.py   # Python script to fetch VK Video content
-│   ├── generate_favicon.py  # Python script to generate favicon files
-│   ├── logo-animations.js   # Logo animation system
-│   ├── main.js              # Main application initialisation
-│   ├── navigation.js        # Section navigation and animations
-│   ├── stream-controls.js   # Stream tab switching and chat controls
-│   └── update_vk_titles.py  # Python script to update VK video titles
+│   ├── config.js             # Configuration loader
+│   ├── embeds.js             # Archive embed management
+│   ├── events.js             # Events calendar functionality
+│   ├── fetch_mixcloud.py     # Python script to fetch Mixcloud content
+│   ├── fetch_vk_videos.py    # Python script to fetch VK Video content
+│   ├── generate_favicon.py   # Python script to generate favicon files
+│   ├── generate_logo_optimized.py  # Logo optimisation script
+│   ├── logo-animations.js    # Logo animation system
+│   ├── main.js               # Main application initialisation
+│   ├── navigation.js         # Section navigation and animations
+│   ├── stream-controls.js    # Legacy stream controls (if needed)
+│   └── update_vk_titles.py   # Python script to update VK video titles
 ├── styles/
-│   └── main.css             # Main stylesheet
-├── .github/
-│   └── workflows/
-│       └── jekyll-gh-pages.yml  # GitHub Pages deployment workflow
-├── server.py                # Python Waitress server (recommended)
-├── server_basic.py          # Basic Python HTTP server
+│   └── main.css              # Main stylesheet
+├── server.py                 # Python Waitress server (recommended)
 ├── server_waitress.py        # Alternative Waitress server implementation
-├── requirements.txt         # Python dependencies
-├── manifest.json            # Web app manifest
-├── index.html               # Main HTML file
-└── favicon files            # Various favicon sizes and formats
+├── requirements.txt          # Python dependencies
+├── manifest.json             # Web app manifest
+├── index.html                # Main HTML file
+├── OrangeTerryLogo.jpg       # Main logo image
+└── favicon files             # Various favicon sizes and formats
 ```
 
 ## Setup
@@ -99,9 +93,6 @@ python server.py 8080
 ```bash
 # Using Python 3
 python -m http.server 8000
-
-# Using Python 2
-python -m SimpleHTTPServer 8000
 ```
 
 **Option 3: Node.js**
@@ -117,26 +108,26 @@ The Waitress server (Option 1) is recommended as it provides better stability, e
 ### Production Deployment
 
 **GitHub Pages:**
-The project includes a GitHub Actions workflow for automatic deployment to GitHub Pages. Simply push to the `main` branch and the site will be automatically built and deployed.
+Upload all files to your GitHub Pages repository or use GitHub Actions for automatic deployment.
 
 **Manual Deployment:**
 1. Upload all files to your web server
 2. Ensure the server supports serving static files
-3. Update the Twitch chat embed `parent` parameter in `scripts/chat-init.js` if needed (it auto-detects the hostname)
+3. Configure appropriate MIME types for JSON files
 
 ## Utility Scripts
 
 ### Fetching Content
 
-**Mixcloud and hearthis.at:**
+**Mixcloud:**
 ```bash
 python scripts/fetch_mixcloud.py [mixcloud_username] [hearthis_username]
 ```
 Example:
 ```bash
-python scripts/fetch_mixcloud.py FlukieL flukie
+python scripts/fetch_mixcloud.py Orangeterry
 ```
-This script fetches uploads from both platforms and updates `data/archives.json`.
+This script fetches uploads from Mixcloud and updates `data/archives.json`.
 
 **VK Videos:**
 ```bash
@@ -156,11 +147,17 @@ python scripts/generate_favicon.py
 ```
 Generates favicon files in various sizes from a source image.
 
+**Generate Optimised Logos:**
+```bash
+python scripts/generate_logo_optimized.py
+```
+Generates optimised logo variants in multiple sizes and formats.
+
 ## Configuration
 
-### Audio & Video Sets
+### Audio Sets
 
-Edit `data/archives.json` to manage audio and video sets:
+Edit `data/archives.json` to manage audio sets:
 
 ```json
 {
@@ -169,21 +166,13 @@ Edit `data/archives.json` to manage audio and video sets:
       "platform": "mixcloud",
       "title": "Your Mix Title",
       "url": "https://www.mixcloud.com/YourUsername/",
-      "embedUrl": "https://www.mixcloud.com/widget/iframe/?feed=..."
-    },
-    {
-      "platform": "hearthis",
-      "title": "Your Track Title",
-      "url": "https://hearthis.at/yourusername/",
-      "embedUrl": "https://hearthis.at/yourusername/embed/"
-    }
-  ],
-  "video": [
-    {
-      "platform": "vk",
-      "title": "Your Video Title",
-      "url": "https://vkvideo.ru/playlist/...",
-      "embedUrl": "https://vk.com/video_ext.php?..."
+      "embedUrl": "https://www.mixcloud.com/widget/iframe/?feed=...",
+      "key": "/YourUsername/your-mix/",
+      "created_time": "2023-01-01T12:00:00Z",
+      "play_count": 100,
+      "listener_count": 50,
+      "favorite_count": 10,
+      "repost_count": 5
     }
   ]
 }
@@ -203,7 +192,7 @@ Edit `data/events.json` to manage events:
       "time": "20:00",
       "location": "Online",
       "description": "Event description",
-      "type": "stream"
+      "type": "event"
     }
   ]
 }
@@ -216,34 +205,17 @@ Edit `data/events.json` to manage events:
 
 **Date Format:** Use `YYYY-MM-DD` format for dates
 
-### Stream Channels
-
-To change the stream channels, edit `scripts/main.js`:
-
-```javascript
-initLiveStreams('your-kick-channel', 'your-twitch-channel');
-```
-
-### Chat URLs
-
-To update chat URLs, edit `index.html`:
-- Kick chat: Update the `src` attribute of `#kick-chat` iframe
-- Twitch chat: The URL is dynamically generated in `scripts/chat-init.js`
-
 ## Usage
 
 ### Navigation
 - Click navigation buttons in the header to switch between sections
 - Smooth animations transition between sections
+- Direct links to WeekendRadio.co.uk and Instagram
 
-### Live Streams
-- Use the "Kick" and "Twitch" tabs to switch between streams
-- Click the chat toggle button (▶) to expand/collapse the chat panel
-- Chat automatically switches to match the active stream
-
-### Audio/Video Sets
+### Audio Sets
 - Browse sets in grid format
-- Click on sets to play them in embedded players
+- Click on sets to play them in embedded Mixcloud players
+- Sets are sorted by creation date (newest first)
 
 ### Events
 - View upcoming events in calendar format
@@ -252,7 +224,7 @@ To update chat URLs, edit `index.html`:
 
 ### Logo Animations
 - Logo animates automatically on page load
-- New animation every 69 seconds
+- New animation at regular intervals
 - Click the logo to trigger a random animation
 
 ## Technical Details
@@ -264,11 +236,12 @@ To update chat URLs, edit `index.html`:
 - **ES6 Modules**: Modular JavaScript architecture
 
 ### External Dependencies
-- **Twitch Embed API**: `https://embed.twitch.tv/embed/v1.js`
 - **Mixcloud Widget API**: `https://widget.mixcloud.com/media/js/widgetApi.js`
+- **Google Fonts**: Montserrat font family
 
 ### Python Dependencies
 - **waitress**: Production-ready WSGI server (for `server.py`)
+- **Pillow**: Image processing for utility scripts
   - Install with: `pip install -r requirements.txt`
 
 ### Browser Support
@@ -303,9 +276,8 @@ Edit CSS variables in `styles/main.css`:
 - Section transitions: Modify `--transition-speed` and `--transition-easing` CSS variables
 
 ### Layout
-- Theatre mode: Adjust `#live-streams` height in `styles/main.css`
-- Chat width: Modify `.chat-wrapper` width
 - Grid layouts: Update `grid-template-columns` in relevant sections
+- Responsive breakpoints: Adjust media queries in `styles/main.css`
 
 ## Development
 
@@ -326,11 +298,10 @@ This project is for personal use. All rights reserved.
 
 ## Credits
 
-- Logo: Electric Heater Room
+- Logo: Orange Terry
 - Design: Custom dark theme with orange accents
-- Stream Platforms: Kick.com, Twitch.tv
-- Audio Platforms: Mixcloud, hearthis.at
-- Video Platform: VK Video
+- Audio Platform: Mixcloud
+- Font: Montserrat (Google Fonts)
 
 ## Support
 
@@ -341,5 +312,4 @@ For issues or questions, please check:
 
 ---
 
-**Electric Heater Room** - Your destination for live DJ sets and music archives.
-
+**Orange Terry** - Your destination for DJ sets and music archives.
