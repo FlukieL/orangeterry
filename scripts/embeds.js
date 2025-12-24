@@ -818,13 +818,21 @@ export function loadAudioArchives(audioArchives) {
         unloadObserver.observe(section);
     });
 
-    // Load first year immediately
+    // Ensure page is scrolled to top before loading first year
+    window.scrollTo({ top: 0, behavior: 'auto' });
+
+    // Load first year after a short delay to ensure DOM is ready and latest sets are visible
     if (yearSections.length > 0) {
-        const firstSection = yearSections[0];
-        const firstYearContent = firstSection.querySelector('.audio-year-content');
-        const firstYear = firstSection.dataset.year;
-        
-        loadYearContent(firstSection, firstYearContent, firstYear);
+        setTimeout(() => {
+            // Ensure we're still at the top after any potential scroll restoration
+            window.scrollTo({ top: 0, behavior: 'auto' });
+            
+            const firstSection = yearSections[0];
+            const firstYearContent = firstSection.querySelector('.audio-year-content');
+            const firstYear = firstSection.dataset.year;
+            
+            loadYearContent(firstSection, firstYearContent, firstYear);
+        }, 100);
     }
 
     // Check URL for audio parameter and scroll to that set
