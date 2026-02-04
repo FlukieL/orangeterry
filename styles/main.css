@@ -2498,3 +2498,56 @@ body {
     background: var(--accent-orange-hover, #ff8c5a);
 }
 
+/* Past Events Section */
+.past-events-section {
+    margin-top: 4rem;
+    border-top: 1px solid rgba(255, 107, 53, 0.3);
+    padding-top: 2rem;
+}
+
+.past-events-toggle {
+    background: transparent;
+    border: 1px solid var(--accent-orange);
+    color: var(--accent-orange);
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all var(--transition-speed) var(--transition-easing);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-radius: 4px;
+    margin-bottom: 2rem;
+}
+
+.past-events-toggle:hover {
+    background: rgba(255, 107, 53, 0.1);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(255, 107, 53, 0.2);
+}
+
+.past-events-toggle .toggle-icon {
+    transition: transform var(--transition-speed) var(--transition-easing);
+    display: inline-block;
+}
+
+.past-events-toggle.active .toggle-icon {
+    transform: rotate(180deg);
+}
+
+.past-events-container {
+    opacity: 1;
+    max-height: 2000px; /* Arbitrary large height for transition */
+    transition: all 0.6s var(--transition-easing);
+    overflow: hidden;
+}
+
+.past-events-container.hidden {
+    opacity: 0;
+    max-height: 0;
+    margin-top: 0;
+}
+
