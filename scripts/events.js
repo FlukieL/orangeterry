@@ -6,6 +6,8 @@
  * @module events
  */
 
+import { switchSection } from './navigation.js';
+
 /**
  * Loads events from the JSON configuration file
  * 
@@ -237,17 +239,20 @@ export function renderCalendar(events, container, sortOrder = 'asc') {
             eventCard.addEventListener('click', (e) => {
                 // Don't navigate if clicking any link or button inside
                 if (!e.target.closest('a') && !e.target.closest('button')) {
-                    const targetUrl = event.setLink || 'https://weekendradio.co.uk/';
-                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
+                    if (event.setLink) {
+                        navigateToSet(event.setLink);
+                    } else {
+                        window.open('https://weekendradio.co.uk/', '_blank', 'noopener,noreferrer');
+                    }
                 }
             });
             eventCard.style.cursor = 'pointer';
 
             const setLinkHtml = event.setLink ? `
-                <a href="${event.setLink}" target="_blank" rel="noopener noreferrer" class="event-calendar-button event-set-button" aria-label="Listen">
+                <button type="button" class="event-calendar-button event-set-button" aria-label="Listen">
                     <span class="event-calendar-icon">🎧</span>
                     <span class="event-calendar-text">Listen</span>
-                </a>
+                </button>
             ` : '';
 
             eventCard.innerHTML = `
@@ -264,6 +269,18 @@ export function renderCalendar(events, container, sortOrder = 'asc') {
                 </div>
             `;
 
+            // Add click listener to the listen button if it exists
+            if (event.setLink) {
+                const listenBtn = eventCard.querySelector('.event-set-button');
+                if (listenBtn) {
+                    listenBtn.addEventListener('click', (e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        navigateToSet(event.setLink);
+                    });
+                }
+            }
+
             eventsList.appendChild(eventCard);
         });
 
@@ -272,6 +289,31 @@ export function renderCalendar(events, container, sortOrder = 'asc') {
     });
 
     container.appendChild(calendarGrid);
+}
+
+/**
+ * Navigates to the audio sets section and scrolls to the specific set
+ * 
+ * @param {string} setLink - The full Mixcloud URL
+ * @private
+ */
+function navigateToSet(setLink) {
+    try {
+        const urlObj = new URL(setLink);
+        const key = urlObj.pathname;
+
+        // Update URL state so navigation logic works
+        const newUrl = new URL(window.location.href);
+        newUrl.searchParams.set('audio', key);
+        window.history.pushState({}, '', newUrl);
+
+        // Switch to audio archives section (without animation to trigger param check)
+        switchSection('audio-archives', false);
+    } catch (error) {
+        console.error('Error navigating to set:', error);
+        // Fallback to opening in new tab
+        window.open(setLink, '_blank', 'noopener,noreferrer');
+    }
 }
 
 /**
