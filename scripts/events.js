@@ -199,23 +199,35 @@ export function renderCalendar(events, container, sortOrder = 'asc') {
             const googleCalendarUrl = generateGoogleCalendarUrl(event);
 
             // Make the event card clickable
+            // Make the event card clickable
             eventCard.addEventListener('click', (e) => {
-                // Don't navigate if clicking the calendar button
-                if (!e.target.closest('.event-calendar-button')) {
-                    window.open('https://flukiel.github.io/orangeterry', '_blank', 'noopener,noreferrer');
+                // Don't navigate if clicking any link or button inside
+                if (!e.target.closest('a') && !e.target.closest('button')) {
+                    const targetUrl = event.setLink || 'https://weekendradio.co.uk/';
+                    window.open(targetUrl, '_blank', 'noopener,noreferrer');
                 }
             });
             eventCard.style.cursor = 'pointer';
+
+            const setLinkHtml = event.setLink ? `
+                <a href="${event.setLink}" target="_blank" rel="noopener noreferrer" class="event-calendar-button event-set-button" aria-label="Listen">
+                    <span class="event-calendar-icon">🎧</span>
+                    <span class="event-calendar-text">Listen</span>
+                </a>
+            ` : '';
 
             eventCard.innerHTML = `
                 <div class="event-time">${event.time || 'All Day'}</div>
                 <div class="event-title">${event.title}</div>
                 ${event.location ? `<div class="event-location">${event.location}</div>` : ''}
                 ${event.description ? `<div class="event-description">${event.description}</div>` : ''}
-                <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="event-calendar-button" aria-label="Add to Google Calendar">
-                    <span class="event-calendar-icon">📅</span>
-                    <span class="event-calendar-text">Add to Google Calendar</span>
-                </a>
+                <div class="event-actions">
+                    ${setLinkHtml}
+                    <a href="${googleCalendarUrl}" target="_blank" rel="noopener noreferrer" class="event-calendar-button" aria-label="Add to Google Calendar">
+                        <span class="event-calendar-icon">📅</span>
+                        <span class="event-calendar-text">Add to Google Calendar</span>
+                    </a>
+                </div>
             `;
 
             eventsList.appendChild(eventCard);
