@@ -65,20 +65,54 @@ function formatDate(dateString) {
  * @private
  */
 function generateGoogleCalendarUrl(event) {
-    // Parse date and time
+    // Parse date
     const dateStr = event.date; // YYYY-MM-DD format
-    const timeStr = event.time || '00:00'; // HH:MM format or default to midnight
+
+    // Parse time - handle "HH:MM", "HH:MM-HH:MM", or "HH:MM - HH:MM"
+    let timeStr = event.time || '00:00';
+    let endStr = null;
+
+    if (timeStr.includes('-')) {
+        const parts = timeStr.split('-').map(t => t.trim());
+        timeStr = parts[0];
+        if (parts.length > 1 && parts[1]) {
+            endStr = parts[1];
+        }
+    }
 
     // Create start date/time
-    const [hours, minutes] = timeStr.split(':').map(Number);
+    let [hours, minutes] = timeStr.split(':').map(Number);
+    if (isNaN(hours)) hours = 0;
+    if (isNaN(minutes)) minutes = 0;
+
     const startDate = new Date(dateStr + 'T' + String(hours).padStart(2, '0') + ':' + String(minutes).padStart(2, '0') + ':00');
 
-    // Default to 1 hour duration if no end time specified
+    // Calculate end date/time
     const endDate = new Date(startDate);
-    endDate.setHours(endDate.getHours() + 1);
+
+    if (endStr) {
+        let [endHours, endMinutes] = endStr.split(':').map(Number);
+        if (!isNaN(endHours) && !isNaN(endMinutes)) {
+            // Set end time on the same day
+            endDate.setHours(endHours);
+            endDate.setMinutes(endMinutes);
+
+            // Handle day rollover validation if needed (though unlikely for simple events)
+            if (endDate < startDate) {
+                endDate.setDate(endDate.getDate() + 1);
+            }
+        } else {
+            endDate.setHours(endDate.getHours() + 1);
+        }
+    } else {
+        // Default to 1 hour duration if no end time specified
+        endDate.setHours(endDate.getHours() + 1);
+    }
 
     // Format dates for Google Calendar (YYYYMMDDTHHMMSSZ in UTC)
     const formatGoogleDate = (date) => {
+        if (isNaN(date.getTime())) return ''; // Handle invalid dates
+
         const year = date.getUTCFullYear();
         const month = String(date.getUTCMonth() + 1).padStart(2, '0');
         const day = String(date.getUTCDate()).padStart(2, '0');
