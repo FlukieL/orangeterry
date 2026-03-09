@@ -19,6 +19,16 @@
       "description": "Orange Terry WeekendRadio.co.uk Stream",
       "setLink": "https://www.mixcloud.com/weekendradiocouk/orange-terry-sunday-service-8226/",
       "type": "event"
+    },
+    {
+      "id": 4,
+      "title": "Orange Terry WeekendRadio.co.uk Stream",
+      "date": "2026-03-08",
+      "time": "12:00-14:00",
+      "location": "Online",
+      "description": "Orange Terry WeekendRadio.co.uk Stream",
+      "setLink": "https://www.mixcloud.com/weekendradiocouk/ot-sun-8326/",
+      "type": "event"
     }
   ]
 }
